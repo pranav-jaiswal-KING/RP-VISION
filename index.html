@@ -1,0 +1,708 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>RP VISION — Energy Supply Chain Resilience Command</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --ink:#0A121C;
+    --panel:#111E2C;
+    --panel-2:#0D1826;
+    --line:#233247;
+    --line-soft:#1A2635;
+    --text:#E7EDF4;
+    --muted:#7E90A6;
+    --muted-2:#59687D;
+    --amber:#E8A33D;
+    --amber-dim:#8A6528;
+    --teal:#3FA796;
+    --teal-dim:#245A50;
+    --red:#DA5B4E;
+    --red-dim:#7A342C;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  html,body{background:var(--ink); color:var(--text); font-family:'IBM Plex Sans', sans-serif; -webkit-font-smoothing:antialiased;}
+  body{
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(63,167,150,0.08), transparent 60%),
+      radial-gradient(ellipse 900px 600px at 100% 10%, rgba(232,163,61,0.06), transparent 60%);
+    padding-bottom:80px;
+  }
+  .mono{font-family:'IBM Plex Mono', monospace;}
+  .disp{font-family:'Space Grotesk', sans-serif;}
+  a{color:inherit;}
+
+  /* ---------- Top bar ---------- */
+  .topbar{
+    display:flex; align-items:center; justify-content:space-between;
+    padding:14px 28px; border-bottom:1px solid var(--line-soft);
+    position:sticky; top:0; z-index:50;
+    background:rgba(10,18,28,0.92); backdrop-filter:blur(10px);
+  }
+  .brand{display:flex; align-items:center; gap:12px;}
+  .brand-mark{
+    width:34px; height:34px; border-radius:7px;
+    background:linear-gradient(135deg, var(--amber), #C97A22);
+    display:flex; align-items:center; justify-content:center;
+    font-family:'Space Grotesk'; font-weight:700; color:#0A121C; font-size:15px;
+    box-shadow:0 0 24px rgba(232,163,61,0.35);
+  }
+  .brand-text .name{font-family:'Space Grotesk'; font-weight:700; font-size:16px; letter-spacing:0.06em;}
+  .brand-text .sub{font-size:10.5px; color:var(--muted); letter-spacing:0.08em; text-transform:uppercase; margin-top:1px;}
+  .top-status{display:flex; align-items:center; gap:22px;}
+  .status-item{display:flex; flex-direction:column; align-items:flex-end;}
+  .status-item .label{font-size:9.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.09em;}
+  .status-item .value{font-size:12.5px; font-family:'IBM Plex Mono'; margin-top:2px;}
+  .pulse-dot{width:7px; height:7px; border-radius:50%; background:var(--teal); display:inline-block; margin-right:6px; box-shadow:0 0 8px var(--teal); animation:pulse 2s infinite;}
+  @keyframes pulse{0%,100%{opacity:1;}50%{opacity:0.35;}}
+
+  /* ---------- ticker ---------- */
+  .ticker-wrap{
+    border-bottom:1px solid var(--line-soft); background:var(--panel-2);
+    overflow:hidden; white-space:nowrap; position:relative; height:34px; display:flex; align-items:center;
+  }
+  .ticker-tag{
+    flex-shrink:0; background:var(--red-dim); color:#F4C9C2; font-family:'IBM Plex Mono'; font-size:10px;
+    letter-spacing:0.1em; padding:4px 12px; height:100%; display:flex; align-items:center; z-index:2;
+  }
+  .ticker-track{display:inline-flex; gap:48px; animation:scroll 42s linear infinite; padding-left:24px;}
+  .ticker-track span{font-family:'IBM Plex Mono'; font-size:11.5px; color:var(--muted);}
+  .ticker-track span b{color:var(--text); font-weight:500;}
+  @keyframes scroll{0%{transform:translateX(0);}100%{transform:translateX(-50%);}}
+
+  .wrap{max-width:1320px; margin:0 auto; padding:0 28px;}
+
+  /* ---------- hero ---------- */
+  .hero{padding:44px 0 8px;}
+  .hero-top{display:flex; justify-content:space-between; align-items:flex-end; gap:24px; flex-wrap:wrap; margin-bottom:28px;}
+  .eyebrow{font-family:'IBM Plex Mono'; font-size:11px; color:var(--amber); letter-spacing:0.14em; text-transform:uppercase; margin-bottom:10px;}
+  .hero h1{font-family:'Space Grotesk'; font-size:34px; font-weight:600; line-height:1.15; max-width:640px;}
+  .hero p{color:var(--muted); font-size:14px; max-width:520px; margin-top:12px; line-height:1.6;}
+  .hero-meta{display:flex; gap:28px; text-align:right;}
+  .hero-meta .m{}
+  .hero-meta .m .num{font-family:'Space Grotesk'; font-size:26px; font-weight:600;}
+  .hero-meta .m .lab{font-size:10px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.08em; margin-top:2px;}
+  .hero-meta .m.warn .num{color:var(--red);}
+
+  /* ---------- radar grid ---------- */
+  .corridor-grid{
+    display:grid; grid-template-columns:repeat(4, 1fr); gap:14px; margin:20px 0 36px;
+  }
+  @media(max-width:980px){.corridor-grid{grid-template-columns:repeat(2,1fr);}}
+  .corridor-card{
+    background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px;
+    position:relative; overflow:hidden; transition:border-color .2s;
+  }
+  .corridor-card:hover{border-color:var(--amber-dim);}
+  .corridor-card .cname{font-family:'Space Grotesk'; font-size:14px; font-weight:600;}
+  .corridor-card .cflow{font-size:10.5px; color:var(--muted-2); margin-top:2px; font-family:'IBM Plex Mono';}
+  .gauge-row{display:flex; align-items:center; gap:14px; margin-top:16px;}
+  .gauge-score{font-family:'Space Grotesk'; font-size:30px; font-weight:700;}
+  .gauge-bar-bg{flex:1; height:6px; background:var(--line-soft); border-radius:4px; overflow:hidden;}
+  .gauge-bar-fill{height:100%; border-radius:4px; transition:width .6s ease;}
+  .level-tag{display:inline-block; margin-top:12px; font-size:9.5px; padding:3px 8px; border-radius:20px; font-family:'IBM Plex Mono'; letter-spacing:0.06em; text-transform:uppercase;}
+  .lvl-low{background:rgba(63,167,150,0.12); color:var(--teal); border:1px solid var(--teal-dim);}
+  .lvl-mid{background:rgba(232,163,61,0.12); color:var(--amber); border:1px solid var(--amber-dim);}
+  .lvl-high{background:rgba(218,91,78,0.14); color:#F0968A; border:1px solid var(--red-dim);}
+
+  /* ---------- section shell ---------- */
+  .section{padding:52px 0; border-top:1px solid var(--line-soft);}
+  .section-head{display:flex; justify-content:space-between; align-items:flex-end; margin-bottom:26px; flex-wrap:wrap; gap:14px;}
+  .section-num{font-family:'IBM Plex Mono'; color:var(--muted-2); font-size:11px; letter-spacing:0.1em;}
+  .section h2{font-family:'Space Grotesk'; font-size:23px; font-weight:600; margin-top:6px;}
+  .section-desc{color:var(--muted); font-size:13px; max-width:460px; text-align:right; line-height:1.55;}
+
+  /* ---------- scenario modeller ---------- */
+  .scenario-tabs{display:flex; gap:10px; margin-bottom:22px; flex-wrap:wrap;}
+  .scenario-tab{
+    background:var(--panel); border:1px solid var(--line); color:var(--muted); padding:10px 16px; border-radius:8px;
+    font-size:12.5px; font-family:'IBM Plex Sans'; cursor:pointer; transition:all .15s; font-weight:500;
+  }
+  .scenario-tab:hover{border-color:var(--amber-dim); color:var(--text);}
+  .scenario-tab.active{background:rgba(232,163,61,0.1); border-color:var(--amber); color:var(--amber);}
+  .scenario-panel{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:26px 28px;}
+  .scenario-top{display:flex; justify-content:space-between; align-items:flex-start; gap:20px; flex-wrap:wrap; margin-bottom:22px;}
+  .scenario-title{font-family:'Space Grotesk'; font-size:17px; font-weight:600;}
+  .scenario-desc{color:var(--muted); font-size:12.5px; max-width:560px; margin-top:6px; line-height:1.6;}
+  .scenario-prob{text-align:right; flex-shrink:0;}
+  .scenario-prob .p{font-family:'Space Grotesk'; font-size:24px; font-weight:700; color:var(--amber);}
+  .scenario-prob .l{font-size:9.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.08em;}
+
+  .impact-grid{display:grid; grid-template-columns:repeat(4,1fr); gap:16px;}
+  @media(max-width:900px){.impact-grid{grid-template-columns:repeat(2,1fr);}}
+  .impact-card{background:var(--panel-2); border:1px solid var(--line-soft); border-radius:9px; padding:16px;}
+  .impact-card .ilabel{font-size:10.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.06em; font-family:'IBM Plex Mono';}
+  .impact-card .ival{font-family:'Space Grotesk'; font-size:22px; font-weight:700; margin-top:8px;}
+  .impact-card .ival.neg{color:var(--red);}
+  .impact-card .ival.pos{color:var(--teal);}
+  .impact-track{height:5px; background:var(--line-soft); border-radius:3px; margin-top:12px; overflow:hidden;}
+  .impact-fill{height:100%; border-radius:3px; transition:width .7s ease;}
+
+  .assumptions{margin-top:20px; padding-top:18px; border-top:1px solid var(--line-soft); display:flex; gap:24px; flex-wrap:wrap;}
+  .assumptions div{font-size:11px; color:var(--muted); font-family:'IBM Plex Mono';}
+  .assumptions div b{color:var(--muted); font-weight:500;}
+
+  /* ---------- procurement table ---------- */
+  .proc-table-wrap{background:var(--panel); border:1px solid var(--line); border-radius:12px; overflow:hidden;}
+  table{width:100%; border-collapse:collapse;}
+  thead th{
+    text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:0.08em; color:var(--muted-2);
+    font-family:'IBM Plex Mono'; font-weight:500; padding:14px 18px; border-bottom:1px solid var(--line);
+    background:var(--panel-2);
+  }
+  tbody td{padding:15px 18px; border-bottom:1px solid var(--line-soft); font-size:13px; vertical-align:middle;}
+  tbody tr:last-child td{border-bottom:none;}
+  tbody tr{transition:background .15s;}
+  tbody tr:hover{background:rgba(255,255,255,0.015);}
+  .src-name{font-weight:600; font-family:'Space Grotesk'; font-size:13.5px;}
+  .src-region{font-size:10.5px; color:var(--muted-2); margin-top:1px;}
+  .score-pill{display:inline-flex; align-items:center; gap:8px;}
+  .score-track{width:64px; height:5px; background:var(--line-soft); border-radius:3px; overflow:hidden;}
+  .score-fill{height:100%; border-radius:3px; background:linear-gradient(90deg, var(--teal-dim), var(--teal));}
+  .rank-badge{
+    width:22px; height:22px; border-radius:5px; display:inline-flex; align-items:center; justify-content:center;
+    font-family:'IBM Plex Mono'; font-size:11px; font-weight:600; background:var(--panel-2); border:1px solid var(--line); color:var(--muted);
+  }
+  .rank-badge.top{background:rgba(232,163,61,0.12); border-color:var(--amber-dim); color:var(--amber);}
+  .compat-tag{font-size:10.5px; padding:3px 8px; border-radius:5px; font-family:'IBM Plex Mono';}
+  .compat-high{background:rgba(63,167,150,0.12); color:var(--teal);}
+  .compat-mid{background:rgba(232,163,61,0.12); color:var(--amber);}
+  .compat-low{background:rgba(218,91,78,0.12); color:#F0968A;}
+
+  /* ---------- SPR ---------- */
+  .spr-layout{display:grid; grid-template-columns:1.4fr 1fr; gap:20px;}
+  @media(max-width:920px){.spr-layout{grid-template-columns:1fr;}}
+  .spr-chart-card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:24px;}
+  .spr-side{display:flex; flex-direction:column; gap:14px;}
+  .spr-stat{background:var(--panel); border:1px solid var(--line); border-radius:10px; padding:18px 20px;}
+  .spr-stat .slabel{font-size:10.5px; color:var(--muted-2); text-transform:uppercase; letter-spacing:0.07em; font-family:'IBM Plex Mono';}
+  .spr-stat .sval{font-family:'Space Grotesk'; font-size:26px; font-weight:700; margin-top:6px;}
+  .spr-stat .sdesc{font-size:11.5px; color:var(--muted); margin-top:6px; line-height:1.5;}
+  .spr-legend{display:flex; gap:18px; margin-top:16px; flex-wrap:wrap;}
+  .spr-legend div{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); font-family:'IBM Plex Mono';}
+  .spr-legend .dot{width:9px; height:9px; border-radius:2px;}
+
+  /* ---------- digital twin ---------- */
+  .twin-card{background:var(--panel); border:1px solid var(--line); border-radius:12px; padding:10px; overflow:hidden;}
+  .twin-legend{display:flex; gap:22px; padding:14px 20px 4px; flex-wrap:wrap;}
+  .twin-legend div{display:flex; align-items:center; gap:7px; font-size:11px; color:var(--muted); font-family:'IBM Plex Mono';}
+  .twin-legend .dot{width:9px; height:9px; border-radius:50%;}
+  #twinMap{ background:var(--panel-2); border-radius:8px; }
+
+  /* ---------- footer ---------- */
+  footer{padding:40px 0 10px; text-align:center; color:var(--muted-2); font-size:11px; font-family:'IBM Plex Mono';}
+</style>
+</head>
+<body>
+
+<div class="topbar">
+  <div class="brand">
+    <div class="brand-mark">RP</div>
+    <div class="brand-text">
+      <div class="name">RP VISION</div>
+      <div class="sub">Energy Supply Chain Resilience</div>
+    </div>
+  </div>
+  <div class="top-status">
+    <div class="status-item">
+      <span class="label"><span class="pulse-dot"></span>System</span>
+      <span class="value">Monitoring — Live</span>
+    </div>
+    <div class="status-item">
+      <span class="label">Reserve Cover</span>
+      <span class="value" id="topReserveDays">9.5 days</span>
+    </div>
+    <div class="status-item">
+      <span class="label">Clock (IST)</span>
+      <span class="value mono" id="clock">—</span>
+    </div>
+  </div>
+</div>
+
+<div class="ticker-wrap">
+  <div class="ticker-tag">SIGNALS</div>
+  <div class="ticker-track" id="tickerTrack"></div>
+</div>
+
+<div class="wrap">
+
+  <section class="hero">
+    <div class="hero-top">
+      <div>
+        <div class="eyebrow">Prototype</div>
+        <h1>India imports 88% of its crude. Nearly half moves through one strait.</h1>
+        <p>RP VISION turns geopolitical and logistics signal into procurement action — continuously scoring corridor risk, simulating disruption cascades, and ranking executable rerouting options before a shock becomes a shortage.</p>
+      </div>
+      <div class="hero-meta">
+        <div class="m warn">
+          <div class="num" id="heroHormuzShare">42%</div>
+          <div class="lab">Volume via Hormuz</div>
+        </div>
+        <div class="m">
+          <div class="num">88%</div>
+          <div class="lab">Crude Imported</div>
+        </div>
+        <div class="m warn">
+          <div class="num">9.5d</div>
+          <div class="lab">SPR Cover</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="corridor-grid" id="corridorGrid"></div>
+  </section>
+
+  <section class="section" id="scenarios">
+    <div class="section-head">
+      <div>
+        <div class="section-num">01 — Disruption Scenario Modeller</div>
+        <h2>Simulate the shock before it happens</h2>
+      </div>
+      <div class="section-desc">Each scenario runs against explicit, testable assumptions and computes cascading impact on refinery run rates, fuel prices, power sector stress, and GDP trajectory.</div>
+    </div>
+
+    <div class="scenario-tabs" id="scenarioTabs"></div>
+    <div class="scenario-panel" id="scenarioPanel"></div>
+  </section>
+
+  <section class="section" id="procurement">
+    <div class="section-head">
+      <div>
+        <div class="section-num">02 — Adaptive Procurement Orchestrator</div>
+        <h2>Ranked alternatives, ready to act on</h2>
+      </div>
+      <div class="section-desc">Live-ranked against the active scenario — spot pricing, tanker availability, transit time, and refinery grade compatibility, weighted into one composite score.</div>
+    </div>
+    <div class="proc-table-wrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Rank</th><th>Source</th><th>Spot Price</th><th>Tanker Availability</th><th>Transit</th><th>Grade Compatibility</th><th>Composite Score</th>
+          </tr>
+        </thead>
+        <tbody id="procBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <section class="section" id="spr">
+    <div class="section-head">
+      <div>
+        <div class="section-num">03 — Strategic Reserve Optimisation</div>
+        <h2>Drawdown modelled against the gap, not the calendar</h2>
+      </div>
+      <div class="section-desc">Projects SPR days-of-cover under the active scenario against baseline consumption, so drawdown decisions are made ahead of the shortfall.</div>
+    </div>
+    <div class="spr-layout">
+      <div class="spr-chart-card">
+        <svg id="sprChart" width="640" height="280" viewBox="0 0 640 280" style="width:100%; height:auto; display:block;"></svg>
+        <div class="spr-legend">
+          <div><span class="dot" style="background:var(--teal)"></span>Baseline consumption</div>
+          <div><span class="dot" style="background:var(--amber)"></span>Active scenario drawdown</div>
+          <div><span class="dot" style="background:var(--red)"></span>Critical threshold (3 days)</div>
+        </div>
+      </div>
+      <div class="spr-side">
+        <div class="spr-stat">
+          <div class="slabel">Days to Critical Threshold</div>
+          <div class="sval" id="sprDaysCritical">9.5</div>
+          <div class="sdesc" id="sprDaysDesc">At baseline consumption, reserves hold above the 3-day critical line for the full projection window.</div>
+        </div>
+        <div class="spr-stat">
+          <div class="slabel">Recommended Drawdown Rate</div>
+          <div class="sval" id="sprDrawRate">0%</div>
+          <div class="sdesc" id="sprDrawDesc">No drawdown recommended under current baseline conditions.</div>
+        </div>
+        <div class="spr-stat">
+          <div class="slabel">Replenishment Window</div>
+          <div class="sval" id="sprReplWindow">—</div>
+          <div class="sdesc">Earliest point spot procurement can restore reserve levels post-drawdown, at current tanker availability.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section" id="twin">
+    <div class="section-head">
+      <div>
+        <div class="section-num">04 — Supply Chain Digital Twin</div>
+        <h2>The network, end to end</h2>
+      </div>
+      <div class="section-desc">A stylised live map of wellhead-to-refinery flow — corridor risk, port congestion, and refinery status in one persistent view.</div>
+    </div>
+    <div class="twin-card">
+      <div class="twin-legend">
+        <div><span class="dot" style="background:var(--teal)"></span>Nominal flow</div>
+        <div><span class="dot" style="background:var(--amber)"></span>Elevated risk corridor</div>
+        <div><span class="dot" style="background:var(--red)"></span>High risk corridor</div>
+      </div>
+      <svg id="twinMap" width="1160" height="460" viewBox="0 0 1160 460" style="width:100%; height:auto; display:block;"></svg>
+    </div>
+  </section>
+
+</div>
+
+<footer>RP VISION — Prototype built for evaluation. Illustrative data; not a live production feed.</footer>
+
+<script>
+/* ============ CLOCK ============ */
+function tickClock(){
+  const d = new Date();
+  const opts = {hour:'2-digit', minute:'2-digit', second:'2-digit', hour12:false};
+  document.getElementById('clock').textContent = d.toLocaleTimeString('en-GB', opts);
+}
+setInterval(tickClock, 1000); tickClock();
+
+/* ============ TICKER ============ */
+const signals = [
+  'US Treasury adds 4 vessels to Iranian shadow-fleet sanctions list',
+  'Houthi forces claim missile intercept near Bab-el-Mandeb shipping lane',
+  'Brent crude +2.1% on Gulf tanker insurance premium spike',
+  'Saudi Aramco holds official selling price for Asia-bound grades',
+  'AIS data shows 6 VLCCs rerouting via Cape of Good Hope',
+  'OPEC+ delegates signal no emergency output change this cycle',
+  'Port of Fujairah reports congestion easing, wait times down 14%',
+  'Indian refiners increase Russian Urals share to 38% of crude basket',
+  'Suez Canal Authority reports transit volume steady week-on-week',
+  'US EIA revises global spare capacity estimate down 0.3M bpd'
+];
+const track = document.getElementById('tickerTrack');
+const doubled = [...signals, ...signals];
+track.innerHTML = doubled.map(s => `<span>● <b>${s.split(' ').slice(0,3).join(' ')}</b> ${s.split(' ').slice(3).join(' ')}</span>`).join('');
+
+/* ============ CORRIDORS ============ */
+const corridors = [
+  {name:'Strait of Hormuz', flow:'~21M bpd global transit', score:74},
+  {name:'Bab-el-Mandeb / Red Sea', flow:'~9M bpd global transit', score:61},
+  {name:'Suez Canal', flow:'~5M bpd global transit', score:38},
+  {name:'Strait of Malacca', flow:'~16M bpd global transit', score:22},
+];
+function levelInfo(score){
+  if(score>=65) return {cls:'lvl-high', label:'Elevated — High', color:'var(--red)'};
+  if(score>=35) return {cls:'lvl-mid', label:'Watch — Moderate', color:'var(--amber)'};
+  return {cls:'lvl-low', label:'Nominal — Low', color:'var(--teal)'};
+}
+function renderCorridors(){
+  const grid = document.getElementById('corridorGrid');
+  grid.innerHTML = corridors.map(c => {
+    const lv = levelInfo(c.score);
+    return `<div class="corridor-card">
+      <div class="cname">${c.name}</div>
+      <div class="cflow">${c.flow}</div>
+      <div class="gauge-row">
+        <div class="gauge-score" style="color:${lv.color}">${c.score}</div>
+        <div class="gauge-bar-bg"><div class="gauge-bar-fill" style="width:${c.score}%; background:${lv.color};"></div></div>
+      </div>
+      <div class="level-tag ${lv.cls}">${lv.label}</div>
+    </div>`;
+  }).join('');
+}
+renderCorridors();
+// gentle live jitter to feel "monitoring"
+setInterval(()=>{
+  corridors.forEach(c => { c.score = Math.max(5, Math.min(96, c.score + (Math.random()*6-3))); c.score = Math.round(c.score); });
+  renderCorridors();
+}, 4000);
+
+/* ============ SCENARIOS ============ */
+const scenarios = [
+  {
+    id:'hormuz', name:'Hormuz Partial Closure', prob:'18%',
+    desc:'Iran restricts transit to two shipping lanes for 10 days following a maritime security incident; insurers withdraw war-risk cover for VLCCs.',
+    impacts:[
+      {label:'Refinery Run Rate', val:'-18%', pct:82, cls:'neg', color:'var(--red)'},
+      {label:'Domestic Fuel Price', val:'+22%', pct:88, cls:'neg', color:'var(--red)'},
+      {label:'Power Sector Stress', val:'+15%', pct:60, cls:'neg', color:'var(--amber)'},
+      {label:'GDP Trajectory', val:'-0.6%', pct:60, cls:'neg', color:'var(--red)'},
+    ],
+    assumptions:['War-risk premium: +$0.28/bbl', 'Affected volume: 42% of crude basket', 'Rerouting via Cape adds 14 days transit', 'SPR drawdown begins day 3'],
+    spr:{days:5.2, draw:'6.4%'}
+  },
+  {
+    id:'opec', name:'OPEC+ Emergency Cut', prob:'27%',
+    desc:'OPEC+ announces a coordinated 1.2M bpd output reduction in response to a member-state supply outage, tightening global spare capacity.',
+    impacts:[
+      {label:'Refinery Run Rate', val:'-9%', pct:48, cls:'neg', color:'var(--amber)'},
+      {label:'Domestic Fuel Price', val:'+14%', pct:58, cls:'neg', color:'var(--amber)'},
+      {label:'Power Sector Stress', val:'+6%', pct:30, cls:'neg', color:'var(--teal)'},
+      {label:'GDP Trajectory', val:'-0.3%', pct:32, cls:'neg', color:'var(--amber)'},
+    ],
+    assumptions:['Global spare capacity: -1.2M bpd', 'Spot premium on non-OPEC grades: +$4.10/bbl', 'Effective within 72 hours of announcement', 'No physical transit disruption'],
+    spr:{days:7.1, draw:'2.1%'}
+  },
+  {
+    id:'redsea', name:'Red Sea Shipping Suspension', prob:'34%',
+    desc:'Sustained attacks force major carriers to suspend Red Sea transits entirely; all Europe- and Med-bound crude reroutes via the Cape.',
+    impacts:[
+      {label:'Refinery Run Rate', val:'-5%', pct:26, cls:'neg', color:'var(--teal)'},
+      {label:'Domestic Fuel Price', val:'+9%', pct:38, cls:'neg', color:'var(--amber)'},
+      {label:'Freight Cost', val:'+40%', pct:90, cls:'neg', color:'var(--red)'},
+      {label:'GDP Trajectory', val:'-0.15%', pct:16, cls:'neg', color:'var(--teal)'},
+    ],
+    assumptions:['Cape rerouting adds ~10-14 days transit', 'Freight rate spike concentrated in tanker/container mix', 'Limited direct impact on Gulf-to-India corridor', 'Indirect impact via global price correlation'],
+    spr:{days:8.7, draw:'0.8%'}
+  },
+];
+let activeScenario = scenarios[0].id;
+
+function renderScenarioTabs(){
+  const tabs = document.getElementById('scenarioTabs');
+  tabs.innerHTML = scenarios.map(s => `<button class="scenario-tab ${s.id===activeScenario?'active':''}" data-id="${s.id}">${s.name}</button>`).join('');
+  tabs.querySelectorAll('.scenario-tab').forEach(btn => {
+    btn.addEventListener('click', () => { activeScenario = btn.dataset.id; renderScenarioTabs(); renderScenarioPanel(); renderSPR(); renderProcurement(); });
+  });
+}
+
+function renderScenarioPanel(){
+  const s = scenarios.find(x => x.id === activeScenario);
+  const panel = document.getElementById('scenarioPanel');
+  panel.innerHTML = `
+    <div class="scenario-top">
+      <div>
+        <div class="scenario-title">${s.name}</div>
+        <div class="scenario-desc">${s.desc}</div>
+      </div>
+      <div class="scenario-prob">
+        <div class="p">${s.prob}</div>
+        <div class="l">Modelled Likelihood</div>
+      </div>
+    </div>
+    <div class="impact-grid">
+      ${s.impacts.map(i => `
+        <div class="impact-card">
+          <div class="ilabel">${i.label}</div>
+          <div class="ival ${i.cls}">${i.val}</div>
+          <div class="impact-track"><div class="impact-fill" style="width:${i.pct}%; background:${i.color};"></div></div>
+        </div>`).join('')}
+    </div>
+    <div class="assumptions">
+      ${s.assumptions.map(a => `<div>· ${a}</div>`).join('')}
+    </div>
+  `;
+}
+renderScenarioTabs();
+renderScenarioPanel();
+
+/* ============ PROCUREMENT TABLE ============ */
+const procurementByScenario = {
+  hormuz: [
+    {name:'US Gulf Coast — WTI Midland', region:'Non-Hormuz · Atlantic', price:'$81.40', avail:82, transit:'21 days', compat:'high', score:91},
+    {name:'Guyana — Liza Blend', region:'Non-Hormuz · Atlantic', price:'$79.90', avail:64, transit:'24 days', compat:'mid', score:83},
+    {name:'Brazil — Tupi Blend', region:'Non-Hormuz · Atlantic', price:'$80.60', avail:58, transit:'26 days', compat:'mid', score:78},
+    {name:'Nigeria — Bonny Light', region:'Non-Hormuz · Atlantic', price:'$82.10', avail:70, transit:'19 days', compat:'high', score:87},
+    {name:'Russia — ESPO Blend', region:'Pacific route, bypasses Hormuz', price:'$74.20', avail:76, transit:'12 days', compat:'high', score:89},
+  ],
+  opec: [
+    {name:'Russia — ESPO Blend', region:'Pacific route', price:'$74.90', avail:80, transit:'12 days', compat:'high', score:92},
+    {name:'US Gulf Coast — WTI Midland', region:'Atlantic', price:'$82.10', avail:74, transit:'21 days', compat:'high', score:85},
+    {name:'Iraq — Basrah Medium', region:'Gulf, non-OPEC+ cut member', price:'$78.50', avail:66, transit:'11 days', compat:'high', score:83},
+    {name:'Nigeria — Bonny Light', region:'Atlantic', price:'$83.00', avail:62, transit:'19 days', compat:'high', score:79},
+    {name:'Brazil — Tupi Blend', region:'Atlantic', price:'$81.20', avail:55, transit:'26 days', compat:'mid', score:71},
+  ],
+  redsea: [
+    {name:'Saudi Arabia — Arab Light', region:'Direct Gulf route', price:'$80.10', avail:88, transit:'9 days', compat:'high', score:94},
+    {name:'Iraq — Basrah Medium', region:'Direct Gulf route', price:'$79.40', avail:84, transit:'11 days', compat:'high', score:92},
+    {name:'UAE — Murban', region:'Direct Gulf route', price:'$81.70', avail:79, transit:'9 days', compat:'high', score:90},
+    {name:'Russia — ESPO Blend', region:'Pacific route', price:'$74.60', avail:72, transit:'12 days', compat:'high', score:86},
+    {name:'US Gulf Coast — WTI Midland', region:'Atlantic, Cape reroute', price:'$83.90', avail:48, transit:'31 days', compat:'mid', score:64},
+  ],
+};
+function compatClass(c){ return c==='high' ? 'compat-high' : c==='mid' ? 'compat-mid' : 'compat-low'; }
+function renderProcurement(){
+  const rows = procurementByScenario[activeScenario];
+  const body = document.getElementById('procBody');
+  body.innerHTML = rows.map((r,idx) => `
+    <tr>
+      <td><span class="rank-badge ${idx===0?'top':''}">${idx+1}</span></td>
+      <td><div class="src-name">${r.name}</div><div class="src-region">${r.region}</div></td>
+      <td class="mono">${r.price}/bbl</td>
+      <td>
+        <div class="score-pill">
+          <div class="score-track"><div class="score-fill" style="width:${r.avail}%;"></div></div>
+          <span class="mono" style="font-size:11px; color:var(--muted);">${r.avail}%</span>
+        </div>
+      </td>
+      <td class="mono">${r.transit}</td>
+      <td><span class="compat-tag ${compatClass(r.compat)}">${r.compat.toUpperCase()}</span></td>
+      <td><span class="disp" style="font-weight:700; font-size:15px; color:var(--text);">${r.score}</span><span style="color:var(--muted-2); font-size:11px;"> /100</span></td>
+    </tr>
+  `).join('');
+}
+renderProcurement();
+
+/* ============ SPR CHART ============ */
+function renderSPR(){
+  const s = scenarios.find(x => x.id === activeScenario);
+  const svg = document.getElementById('sprChart');
+  const W = 640, H = 280, padL = 40, padB = 30, padT = 16, padR = 16;
+  const chartW = W - padL - padR, chartH = H - padT - padB;
+  const days = 30;
+  const baselineStart = 9.5;
+  const baselineDrawPerDay = 0.02; // negligible baseline draw
+  const scenarioDrawPerDay = s.id === 'hormuz' ? 0.19 : s.id === 'opec' ? 0.09 : 0.03;
+
+  function pathFor(drawRate){
+    let pts = [];
+    for(let d=0; d<=days; d++){
+      let val = Math.max(0, baselineStart - drawRate*d);
+      const x = padL + (d/days)*chartW;
+      const y = padT + chartH - (val/10)*chartH;
+      pts.push([x,y]);
+    }
+    return pts;
+  }
+  const basePts = pathFor(baselineDrawPerDay);
+  const scenPts = pathFor(scenarioDrawPerDay);
+
+  function toPath(pts){
+    return pts.map((p,i) => (i===0?'M':'L') + p[0].toFixed(1) + ',' + p[1].toFixed(1)).join(' ');
+  }
+
+  const critY = padT + chartH - (3/10)*chartH;
+
+  // gridlines
+  let grid = '';
+  for(let v=0; v<=10; v+=2){
+    const y = padT + chartH - (v/10)*chartH;
+    grid += `<line x1="${padL}" y1="${y}" x2="${W-padR}" y2="${y}" stroke="#1A2635" stroke-width="1"/>`;
+    grid += `<text x="${padL-8}" y="${y+3}" text-anchor="end" font-size="9" fill="#59687D" font-family="IBM Plex Mono">${v}d</text>`;
+  }
+  let xlabels = '';
+  [0,10,20,30].forEach(d => {
+    const x = padL + (d/days)*chartW;
+    xlabels += `<text x="${x}" y="${H-8}" text-anchor="middle" font-size="9" fill="#59687D" font-family="IBM Plex Mono">Day ${d}</text>`;
+  });
+
+  svg.innerHTML = `
+    ${grid}
+    <line x1="${padL}" y1="${critY}" x2="${W-padR}" y2="${critY}" stroke="#DA5B4E" stroke-width="1.4" stroke-dasharray="4 4"/>
+    <path d="${toPath(basePts)}" fill="none" stroke="#3FA796" stroke-width="2.2"/>
+    <path d="${toPath(scenPts)}" fill="none" stroke="#E8A33D" stroke-width="2.4"/>
+    ${xlabels}
+  `;
+
+  // side stats
+  const critDay = Math.min(days, (baselineStart-3)/scenarioDrawPerDay);
+  document.getElementById('sprDaysCritical').textContent = scenarioDrawPerDay < 0.05 ? '30+' : critDay.toFixed(1);
+  document.getElementById('sprDaysDesc').textContent = scenarioDrawPerDay < 0.05
+    ? 'Under this scenario, reserves stay well clear of the 3-day critical line across the projection window.'
+    : `Under ${s.name}, reserves cross the 3-day critical threshold around day ${critDay.toFixed(1)} without intervention.`;
+  document.getElementById('sprDrawRate').textContent = s.spr.draw;
+  document.getElementById('sprDrawDesc').textContent = `Modelled daily drawdown to hold refinery run rates steady through the disruption window.`;
+  document.getElementById('sprReplWindow').textContent = s.id === 'hormuz' ? '11–14 days' : s.id === 'opec' ? '5–7 days' : '3–4 days';
+}
+renderSPR();
+
+/* ============ DIGITAL TWIN MAP ============ */
+function renderTwin(){
+  const svg = document.getElementById('twinMap');
+  const W = 1160, H = 460;
+
+  /* Simplified landmass silhouettes so the canvas reads as a world map,
+     not just floating dots on empty space. Coordinates are stylised,
+     not geographically precise. */
+  const landmasses = [
+    // Americas (left edge)
+    "M20,120 L70,90 L100,140 L90,220 L60,300 L40,380 L15,420 L0,380 L0,140 Z",
+    // Africa
+    "M60,230 L120,200 L170,220 L190,280 L170,360 L120,420 L80,400 L55,320 Z",
+    // Europe / Middle East / Central Asia
+    "M140,60 L260,40 L340,70 L360,140 L300,190 L220,200 L150,160 L120,110 Z",
+    // India / South Asia
+    "M330,190 L420,175 L470,220 L460,300 L410,340 L360,300 L340,240 Z",
+    // Russia / North Asia
+    "M300,20 L620,15 L700,60 L650,110 L420,100 L320,70 Z",
+    // East / SE Asia
+    "M560,140 L700,130 L760,190 L720,260 L620,270 L570,210 Z",
+    // Australia (bottom right, partial)
+    "M760,340 L860,330 L900,370 L860,410 L780,400 Z",
+  ];
+  let landPaths = landmasses.map(d => `<path d="${d}" fill="#132133" stroke="#1A2A3D" stroke-width="1"/>`).join('');
+
+  /* faint graticule so it reads as a map grid */
+  let graticule = '';
+  for(let x=0; x<=W; x+=80){
+    graticule += `<line x1="${x}" y1="0" x2="${x}" y2="${H}" stroke="#152232" stroke-width="1"/>`;
+  }
+  for(let y=0; y<=H; y+=80){
+    graticule += `<line x1="0" y1="${y}" x2="${W}" y2="${y}" stroke="#152232" stroke-width="1"/>`;
+  }
+
+  const nodes = {
+    saudi:   {x:250, y:150, label:'Saudi Arabia', type:'source'},
+    uae:     {x:320, y:190, label:'UAE', type:'source'},
+    iraq:    {x:230, y:105, label:'Iraq', type:'source'},
+    iran:    {x:300, y:115, label:'Iran', type:'source'},
+    russia:  {x:560, y:60,  label:'Russia (ESPO)', type:'source'},
+    nigeria: {x:100, y:290, label:'Nigeria', type:'source'},
+    us:      {x:60,  y:190, label:'US Gulf Coast', type:'source'},
+
+    hormuz:  {x:340, y:170, label:'Str. of Hormuz', type:'corridor', risk:'high'},
+    redsea:  {x:230, y:230, label:'Bab-el-Mandeb', type:'corridor', risk:'mid'},
+    suez:    {x:190, y:180, label:'Suez', type:'corridor', risk:'low'},
+    cape:    {x:150, y:400, label:'Cape Route', type:'corridor', risk:'low'},
+    malacca: {x:700, y:250, label:'Str. of Malacca', type:'corridor', risk:'low'},
+
+    jamnagar:{x:410, y:250, label:'Jamnagar Refinery', type:'refinery'},
+    paradip: {x:470, y:230, label:'Paradip Refinery', type:'refinery'},
+    kochi:   {x:390, y:310, label:'Kochi Refinery', type:'refinery'},
+    mangalore:{x:400,y:280, label:'Mangalore Refinery', type:'refinery'},
+  };
+  const edges = [
+    ['saudi','hormuz','high'], ['uae','hormuz','high'], ['iraq','hormuz','high'], ['iran','hormuz','high'],
+    ['hormuz','jamnagar','high'], ['hormuz','paradip','high'], ['hormuz','mangalore','high'],
+    ['nigeria','suez','low'], ['suez','redsea','mid'], ['redsea','jamnagar','mid'],
+    ['nigeria','cape','low'], ['cape','kochi','low'],
+    ['russia','malacca','low'], ['malacca','paradip','low'],
+    ['us','cape','low'], ['us','kochi','low'],
+  ];
+  const riskColor = {high:'#DA5B4E', mid:'#E8A33D', low:'#3FA796'};
+
+  function nodeDot(n, r, fill, stroke){
+    return `<circle cx="${n.x}" cy="${n.y}" r="${r}" fill="${fill}" stroke="${stroke}" stroke-width="1.5"/>`;
+  }
+
+  let edgePaths = '';
+  edges.forEach(([a,b,risk]) => {
+    const A = nodes[a], B = nodes[b];
+    const mx = (A.x+B.x)/2, my = (A.y+B.y)/2 - 20;
+    edgePaths += `<path d="M${A.x},${A.y} Q${mx},${my} ${B.x},${B.y}" fill="none" stroke="${riskColor[risk]}" stroke-width="2" opacity="0.7"/>`;
+  });
+
+  let nodeEls = '';
+  Object.values(nodes).forEach(n => {
+    if(n.type === 'source'){
+      nodeEls += nodeDot(n, 6, '#E7EDF4', '#0A121C');
+      nodeEls += `<text x="${n.x}" y="${n.y-12}" text-anchor="middle" font-size="11" fill="#B9C6D6" font-family="IBM Plex Mono">${n.label}</text>`;
+    } else if(n.type === 'corridor'){
+      const c = riskColor[n.risk];
+      nodeEls += `<circle cx="${n.x}" cy="${n.y}" r="10" fill="${c}" opacity="0.22"><animate attributeName="r" values="10;18;10" dur="2.6s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.28;0.02;0.28" dur="2.6s" repeatCount="indefinite"/></circle>`;
+      nodeEls += nodeDot(n, 6.5, c, '#0A121C');
+      nodeEls += `<text x="${n.x}" y="${n.y-16}" text-anchor="middle" font-size="11.5" fill="${c}" font-family="IBM Plex Mono" font-weight="600">${n.label}</text>`;
+    } else if(n.type === 'refinery'){
+      nodeEls += `<rect x="${n.x-7}" y="${n.y-7}" width="14" height="14" rx="3" fill="#111E2C" stroke="#E8A33D" stroke-width="2"/>`;
+      nodeEls += `<text x="${n.x}" y="${n.y+24}" text-anchor="middle" font-size="11" fill="#E7EDF4" font-family="IBM Plex Mono">${n.label}</text>`;
+    }
+  });
+
+  svg.innerHTML = `
+    <rect x="0" y="0" width="${W}" height="${H}" fill="#0D1826"/>
+    ${graticule}
+    ${landPaths}
+    ${edgePaths}
+    ${nodeEls}
+  `;
+}
+renderTwin();
+
+/* ============ HERO NUMBER LIVE ============ */
+setInterval(()=>{
+  const val = 40 + Math.round(Math.random()*5);
+  document.getElementById('heroHormuzShare').textContent = val + '%';
+}, 6000);
+</script>
+</body>
+</html>
